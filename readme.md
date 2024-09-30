@@ -53,7 +53,8 @@ OBVP问题
 最后化简到cost function仅与参数T相关，仅需对T作优化即可。
 
 表达式的化简工作由syspy完成，见脚本test_syspy.ipynb
->code似乎没找到？[todo]
+
+
 ## HW5
 BIVP问题，生成minimum jerk曲线
 
@@ -92,11 +93,11 @@ roslaunch mpc_car simulation.launch
 > 
 > using osqp
 
-$min  J = \sum_{i=0}^N (x-x_r)^2+ (y-y_r)^2 + \rho * (\phi-\phi_r)^2\\$
+$min  J = \sum_{i=0}^N (x-x_r)^2+ (y-y_r)^2 + \rho * (\phi-\phi_r)^2\\$ 
 $s.t. -0.1 <= v_k <= v_{max}\\
      |a_k| <= a_{max}\\
      |\delta_k| <= \delta_{max}\\
-     |\delta_{k+1} - \delta_k| <= d\delta_{max}$
+     |\delta_{k+1} - \delta_k| <= d\delta_{max}$ 
 
 ### Homework2
 > Implement MPC with delays in C++;
@@ -125,7 +126,7 @@ using runge kutta-4 ： 参考[四阶龙格库塔法](https://zhuanlan.zhihu.com
 __[ATTENTION]__ Only <TODO: > of codes in src/mpc_car/include/mpc_car/mpc_car.hpp is required.
 
 ## AN EXAMPLE
->todo ：调整程序，目前跟踪效果一般
+>
 <p align="center">
     <img src="hw6_ws/mpc.gif" width="400"/>
 </p>
