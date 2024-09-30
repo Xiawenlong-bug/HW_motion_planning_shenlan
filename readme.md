@@ -93,7 +93,8 @@ roslaunch mpc_car simulation.launch
 > 
 > using osqp
 
-$min  J = \sum_{i=0}^N (x-x_r)^2+ (y-y_r)^2 + \rho * (\phi-\phi_r)^2\\$ 
+$min  J = \sum_{i=0}^N (x-x_r)^2+ (y-y_r)^2 + \rho * (\phi-\phi_r)^2$
+ 
 $s.t. -0.1 <= v_k <= v_{max}\\
      |a_k| <= a_{max}\\
      |\delta_k| <= \delta_{max}\\
