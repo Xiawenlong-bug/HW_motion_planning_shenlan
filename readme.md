@@ -171,6 +171,12 @@ sudo make install
 
 1. 阅读代码：画出trajectory_generator_node运行流程图，重点是厘清
    1. 几个状态之间的切换过程；
+   ```c++
+    string state_str[5] = {"INIT", "WAIT_TARGET", "GEN_NEW_TRAJ", "EXEC_TRAJ",
+                         "REPLAN_TRAJ"};
+    //状态切换见:trajectory_generator_node.cpp
+    void execCallback(const ros::TimerEvent &e);
+   ```
    2. 各个主要功能之间的调用关系，不需要深入到各个功能的内部例如A*的流程。
 2. path planning：推荐实现方案为A*，也可采用其他方案；
 3. simplify the path：将整条path简化为少数几个关键waypoints，推荐方案为RDP算法；
@@ -221,4 +227,29 @@ roslaunch trajectory_generator demo.launch
 ```
 <p align="center">
     <img src="Final_Project/code.gif" width="600"/>
+</p>
+
+
+
+
+
+# 机器人学中的数值优化
+深蓝学院课程作业:
+[机器人学中的数值优化](https://www.shenlanxueyuan.com/course/490?source=1)
+## OPTIM_HW1
+use Armijo condition to solve the Rosenbrock function:
+
+$f(\mathbf{x})=f(x_1,x_2,\ldots,x_N)=\sum_{i=1}^{N/2}\left[100\left(x_{2i-1}^2-x_{2i}\right)^2+\left(x_{2i-1}-1\right)^2\right]$
+
+## OPTIM_HW2
+
+Implement smooth trajectory generation by C++ , using l-bfgs
+
+```shell 
+source devel/setup.bash
+roslaunch gcopter curve_gen.launch 
+```
+
+<p align="center">
+    <img src="optim_hw2/curve_gen.png" width="600"/>
 </p>
