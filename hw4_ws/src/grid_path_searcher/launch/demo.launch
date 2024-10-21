@@ -59,5 +59,5 @@
       <remap from="~goal" to="/goal"/>
       <param name="waypoint_type" value="manual-lonely-waypoint"/>    
     </node>
-    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find grid_path_searcher)/launch/rviz_config/demo.rviz"/> 
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find grid_path_searcher)/launch/rviz_config/default.rviz"/> 
 </launch>

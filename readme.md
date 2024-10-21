@@ -16,7 +16,7 @@ roslaunch grid_path_searcher demo.launch
 source devel/setup.bash
 roslaunch grid_path_searcher demo.launch
 ```
-
+![alt text](hw2_ws/node_graph.png)
 实现A*算法，其中启发函数是Euclidean
 实现JPS算法
 
@@ -29,6 +29,33 @@ roslaunch grid_path_searcher demo.launch
 #define _use_jps 1
 #if _use_jps
 ```
+```shell
+rostopic list
+/demo_node/grid_map_vis
+/demo_node/grid_path_vis
+/demo_node/grid_path_vis_array
+/demo_node/visited_nodes_vis
+/goal
+/random_complex/global_map
+/rosout
+/rosout_agg
+/tf
+/tf_static
+/waypoint_generator/odom
+/waypoint_generator/traj_start_trigger
+/waypoint_generator/waypoints
+/waypoint_generator/waypoints_vis
+```
+demo_node接收/goal和/map（障碍物），输出path\
+pkg waypoint_generator用来接收/goal生成3d pose发布在/waypoint_generator/waypoints\
+node random_complex用来生成地图发布在/random_complex/global_map\
+demo_node内部调用Astar_searcher找到/goal并发布/demo_node/grid_map_vis和/demo_node/grid_path_vis\
+```cpp
+_grid_map_vis_pub  = nh.advertise<sensor_msgs::PointCloud2>("grid_map_vis", 1);
+_grid_path_vis_pub = nh.advertise<visualization_msgs::Marker>("grid_path_vis", 1);
+```
+地图由_grid_map_vis_pub发布，读取map里的障碍物信息pcl::toROSMsg，生成满足分辨率要求的地图，publish sensor_msgs::PointCloud2类型的消息；\
+路径由_grid_path_vis_pub发布，类型为visualization_msgs::Marker\
 <img src=hw2_ws/Astar.png width = 600 height = 400/>
 <!-- ![alt text](hw2_ws/Astar.png) -->
 
@@ -44,26 +71,154 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
 
 ## HW3
 rrt*算法
-TODO
+使用OMPL库的RRTSTAR
+```cpp
+
+void pathFinding(const Vector3d start_pt, const Vector3d target_pt)
+{
+    // Construct the robot state space in which we're planning. 
+    ob::StateSpacePtr space(new ob::RealVectorStateSpace(3));
+
+    // Set the bounds of space to be in [0,1].
+    ob::RealVectorBounds bounds(3);
+    bounds.setLow(0, - _x_size * 0.5);
+    bounds.setLow(1, - _y_size * 0.5);
+    bounds.setLow(2, 0.0);
+
+    bounds.setHigh(0, + _x_size * 0.5);
+    bounds.setHigh(1, + _y_size * 0.5);
+    bounds.setHigh(2, _z_size);
+
+    space->as<ob::RealVectorStateSpace>()->setBounds(bounds);
+    // Construct a space information instance for this state space
+    ob::SpaceInformationPtr si(new ob::SpaceInformation(space));
+    // Set the object used to check which states in the space are valid
+    si->setStateValidityChecker(ob::StateValidityCheckerPtr(new ValidityChecker(si)));
+    si->setup();
+
+    // Set our robot's starting state
+    ob::ScopedState<> start(space);
+    /**
+    *
+    *
+    STEP 2: Finish the initialization of start state
+    *
+    *
+    */ //  todo can  I simply it?
+    start[0] = (&start_pt)->operator[](0)  ;
+    start[1] = (&start_pt)->operator[](1)  ;
+    start[2] = (&start_pt)->operator[](2)  ;
+
+    // Set our robot's goal state
+    ob::ScopedState<> goal(space);
+    /**
+    *
+    *
+    STEP 3: Finish the initialization of goal state
+    *
+    *
+    */
+    goal[0] = (&target_pt)->operator[](0)  ;
+    goal[1] = (&target_pt)->operator[](1)  ;
+    goal[2] = (&target_pt)->operator[](2)  ;
+    // Create a problem instance
+
+    /**
+    *
+    *
+    STEP 4: Create a problem instance, 
+    please define variable as pdef
+    *
+    *
+    */
+    auto pdef(std::make_shared<ob::ProblemDefinition>(si));
+
+    // Set the start and goal states
+    pdef->setStartAndGoalStates(start, goal);
+
+    // Set the optimization objective
+    /**
+    *
+    *
+    STEP 5: Set the optimization objective, the options you can choose are defined earlier:
+    getPathLengthObjective() and getThresholdPathLengthObj()
+    *
+    *
+    */
+    pdef->setOptimizationObjective(getPathLengthObjective(si));
+
+    // Construct our optimizing planner using the RRTstar algorithm.
+    /**
+    *
+    *
+    STEP 6: Construct our optimizing planner using the RRTstar algorithm, 
+    please define varible as optimizingPlanner
+    *
+    *
+    */
+    ob::PlannerPtr optimizingPlanner(new og::RRTstar(si));
+
+    // Set the problem instance for our planner to solve
+    optimizingPlanner->setProblemDefinition(pdef);
+    optimizingPlanner->setup();
+
+    // attempt to solve the planning problem within one second of
+    // planning time
+    ob::PlannerStatus solved = optimizingPlanner->solve(1.0);
+
+    if (solved)
+    {
+        // get the goal representation from the problem definition (not the same as the goal state)
+        // and inquire about the found path
+        og::PathGeometric* path = pdef->getSolutionPath()->as<og::PathGeometric>();
+        
+        vector<Vector3d> path_points;
+
+        for (size_t path_idx = 0; path_idx < path->getStateCount (); path_idx++)
+        {
+            const ob::RealVectorStateSpace::StateType *state = path->getState(path_idx)->as<ob::RealVectorStateSpace::StateType>(); 
+            /**
+            *
+            *
+            STEP 7: Trandform the found path from path to path_points for rviz display
+            *
+            *
+            */
+            auto x = (*state)[0];
+            auto y = (*state)[1];
+            auto z = (*state)[2];
+            Vector3d temp_mat(x,y,z);
+            path_points.push_back(temp_mat);
+        }
+        visRRTstarPath(path_points);       
+    }
+}
+```
 
 ## HW4
-OBVP问题
+ros系统架构和hw2_ws类似\
+OBVP问题推导：\
 ![alt text](hw4_ws/al1.png)
 ![alt1 text](hw4_ws/al2.png)
-最后化简到cost function仅与参数T相关，仅需对T作优化即可。
 
+
+最后化简到cost function仅与参数T相关，仅需对T作优化即可。
+```shell
+source devel/setup.bash
+roslaunch grid_path_searcher demo.launch
+```
 表达式的化简工作由syspy完成，见脚本test_syspy.ipynb
 
 
 ## HW5
 BIVP问题，生成minimum jerk曲线
-
+![alt text](hw5_ws/node_graph.png)
 程序运行：
 ```shell
 roslaunch lec5_hw click_gen.launch
 ```
-<img src="hw5_sec_ws/hw5_1.png" width = 500 height = 300 />
-<img src="hw5_sec_ws/hw5_2.png" width = 500 height = 300 />
+<img src="hw5_ws/hw5_1.png" width = 500 height = 300 />
+<img src="hw5_ws/hw5_2.png" width = 500 height = 300 />
 
 OBVP求解过程可见论文minco,s=3的情形，实现代码见：
 ```
@@ -229,6 +384,29 @@ roslaunch trajectory_generator demo.launch
 ```
 <p align="center">
     <img src="Final_Project/code.gif" width="600"/>
+</p>
+<p align="center">
+    <img src="Final_Project/rosgraph.png" />
+</p>
+因为速度分配策略不是优化策略，因此会存在不合理的地方，导致无人机在原地转圈的情况出现。
+
+核心节点：trajectory_generator_node
+
+```cpp
+  _exec_timer = nh.createTimer(ros::Duration(0.01), execCallback);//FSM,路径搜索程序接口在这里
+
+  _odom_sub = nh.subscribe("odom", 10, rcvOdomCallback);//set odom msg
+  _map_sub = nh.subscribe("local_pointcloud", 1, rcvPointCloudCallBack);//set Obstacle
+  _pts_sub = nh.subscribe("waypoints", 1, rcvWaypointsCallBack);//set goal
+
+  _traj_pub =
+      nh.advertise<quadrotor_msgs::PolynomialTrajectory>("trajectory", 50);
+  _traj_vis_pub = nh.advertise<visualization_msgs::Marker>("vis_trajectory", 1);
+  _path_vis_pub = nh.advertise<visualization_msgs::Marker>("vis_path", 1);
+```
+系统的状态机
+<p align="center">
+    <img src="Final_Project/FSM.png" />
 </p>
 
 

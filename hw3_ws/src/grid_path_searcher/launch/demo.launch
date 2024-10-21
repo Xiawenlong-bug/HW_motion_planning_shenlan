@@ -52,6 +52,6 @@
       <param name="waypoint_type" value="manual-lonely-waypoint"/>    
   </node>
 
-  
+  <node pkg="rviz" type="rviz" name="rviz" output="screen" args="-d $(find grid_path_searcher)/launch/rviz_config/default.rviz"/>
 
 </launch>

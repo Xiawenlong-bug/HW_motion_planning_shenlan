@@ -373,7 +373,7 @@ vector<Vector3d> AstarPathFinder::getPath()
    do{
     gridPath.push_back(terminatePtr);
     terminatePtr = terminatePtr->cameFrom;
-   }while(terminatePtr!=NULL)
+   } while (terminatePtr != NULL);
 
     //cause wild pointer
 //    while(terminatePtr!=NULL){

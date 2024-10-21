@@ -124,7 +124,7 @@ void pathFinding(const Vector3d start_pt, const Vector3d target_pt)
     //_use_jps = 0 -> Do not use JPS
     //_use_jps = 1 -> Use JPS
     //you just need to change the #define value of _use_jps
-#define _use_jps 1
+#define _use_jps 0
 #if _use_jps
     {
         //Call JPS to search for a path
@@ -148,7 +148,8 @@ int main(int argc, char** argv)
 {
     ros::init(argc, argv, "demo_node");
     ros::NodeHandle nh("~");
-
+    //   <remap from="~waypoints"       to="/waypoint_generator/waypoints"/>
+    //   <remap from="~map"             to="/random_complex/global_map"/> 
     _map_sub  = nh.subscribe( "map",       1, rcvPointCloudCallBack );
     _pts_sub  = nh.subscribe( "waypoints", 1, rcvWaypointsCallback );
 
